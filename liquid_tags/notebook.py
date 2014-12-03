@@ -136,9 +136,13 @@ pre.ipynb {
   border: none;
   box-shadow: none;
   margin-bottom: 0;
-  padding: 0;
+  padding: 2px;
   margin: 0px;
   font-size: 13px;
+}
+
+div.highlight-ipynb pre.highlight {
+  border: none !important;
 }
 
 /* remove the prompt div from text cells */
@@ -169,13 +173,17 @@ init_mathjax = function() {
     if (window.MathJax) {
         // MathJax loaded
         MathJax.Hub.Config({
+            TeX: {
+                extensions: ["AMSmath.js"],
+                equationNumbers: {autoNumber: "AMS", useLabelIds: true}
+            },
             tex2jax: {
                 inlineMath: [ ['$','$'], ["\\(","\\)"] ],
                 displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
             },
-            displayAlign: 'left', // Change this to 'center' to center equations.
+            displayAlign: 'center', // Change this to 'center' to center equations.
             "HTML-CSS": {
-                styles: {'.MathJax_Display': {"margin": 0}}
+                styles: {'.MathJax_Display': {"margin": 4}}
             }
         });
         MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
@@ -332,6 +340,13 @@ def notebook(preprocessor, tag, markup):
                 nb_json = IPython.nbformat.reads(nb_text, as_version=4)
 
     (body, resources) = exporter.from_notebook_node(nb_json)
+
+    if IPYTHON_VERSION == 2:
+        resources['inlining']['css'][1] = resources['inlining']['css'][1].replace('highlight', 'highlight-ipynb')
+    elif IPYTHON_VERSION >= 3:
+        a = '<div class=" highlight hl-ipython3"><pre>'
+        b = '<div class="highlight-ipynb"><pre class="highlight ipynb">'
+        body = body.replace(a, b)
 
     # if we haven't already saved the header, save it here.
     if not notebook.header_saved:
